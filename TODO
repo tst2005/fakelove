@@ -1,0 +1,23 @@
+- noter l'idee du protocol d'action
+	pour transferer les love.graphics.print du server -> client
+
+	faire une indexation des fonctions autorisées
+	1 = "love.graphics.print"
+	2 = etc
+	negocier en debut de protocol (genre: register love.graphics.truc -> reponse: 10 || not-allowed)
+	avec une base de protocol commune (un fichier de config de base pour pas devoir declarer tout en debut de session)
+	ca pourra permettre d'avoir un protocol commun de base, et que le serveur le patch (ajout de fonction, desactivation ou renumerotation d'existante)
+
+en interne
+on map la fonction -> numero et inversement
+
+
+first goal :
+- manage keyboard for input
+	- key management
+	or
+	- string ? (command interface)
+- manage love.graphics.print for output
+
+with that we can build a basic server console
+
