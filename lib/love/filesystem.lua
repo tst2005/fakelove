@@ -1,11 +1,26 @@
-require "io"
-require "os"
-require "lfs" -- http://keplerproject.github.com/luafilesystem/manual.html
 
--- module
-local m = love.filesystem
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.filesystem is not a table object!")
+
+local m = love.filesystem or {}
+love.filesystem = assert(m)
+
+
+--require "io"
+
+--require("todo")
+--assert(TODO2 and TODO)
+
+local os = require "os"
+assert(os.getenv)
+
+local lfs = require "lfs" -- http://keplerproject.github.com/luafilesystem/manual.html
+assert(lfs,		"lfs module required")
+assert(lfs.currentdir,	"lfs.currentdir not supported ?!")
+assert(lfs.attributes,	"lfs.attributes not supported ?!")
+assert(lfs.dir,		"lfs.dir not supported ?!")
+
+-------------------------------------------------------------------------------
 
 -- module internal data
 local internaldata = {}
@@ -14,7 +29,7 @@ local internaldata = {}
 local pwd = function() return lfs.currentdir() end
 --local pwd2 = function() return os.getenv("PWD") end
 
-local fsload = function(filename)
+local function fsload (filename)
 	local rfsexists, handler = pcall(loadfile, filename)
 	if rfsexists and handler then
 		return handler
@@ -23,23 +38,23 @@ local fsload = function(filename)
 	return nil
 end
 
-local getattrmode = function(name)
+local function getattrmode(name)
 	return lfs.attributes(name, "mode")
 end
-local isDirectory = function(name)
+local function isDirectory(name)
 	local mode = getattrmode(name)
 	return mode == "directory"
 end
-local isFile = function(name)
+local function isFile(name)
 	local mode = getattrmode(name)
 	return mode == "file"
 end
-local exists = function(name)
+local function exists(name)
 	local mode = getattrmode(name)
 	return mode and true or false
 end
 
-local enumerate = function(dir)
+local function enumerate(dir)
 	-- Note: lfs is for lua filesystem not love filesystem
 	local files = {}
 	for file in lfs.dir(dir) do
@@ -49,7 +64,7 @@ local enumerate = function(dir)
 	end
 end
 
-local mkdir = function(name)
+local function mkdir(name)
 	--TODO: is creation accept absolute path ?
 	--TODO: only create inside SaveDirectory
 	return false
@@ -72,8 +87,8 @@ end
 internaldata.UserDirectory = internaldata.HOME
 internaldata.WorkingDirectory = pwd()
 
-assert(love, "love module required")
-assert(love.filesystem, "LOVE.filesystem")
+--assert(love, "love module required")
+--assert(love.filesystem, "LOVE.filesystem")
 
 m.enumerate           = enumerate
 m.exists              = exists
@@ -104,6 +119,7 @@ m.write               = TODO2("love.filesystem.write")
 m.getIdentity         = function() return internaldata.identity end
 
 -- register the internal data into main table
+local getInternalDataTable = love.getInternalDataTable
 getInternalDataTable().filesystem = internaldata
 
 return m

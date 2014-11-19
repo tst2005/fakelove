@@ -1,6 +1,8 @@
--- module
-local m = love.thread
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.thread is not a table object!")
+
+local m = love.thread or {}
+love.thread = assert(m)
 
 return m

@@ -1,7 +1,9 @@
--- module
-local m = love.graphics
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.graphics is not a table object!")
+
+local m = love.graphics or {}
+love.graphics = assert(m)
 
 -- module internal data
 local internaldata = {}

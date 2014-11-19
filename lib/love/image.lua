@@ -1,6 +1,8 @@
--- module
-local m = love.image
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.image is not a table object!")
+
+local m = love.image or {}
+love.image = assert(m)
 
 return m

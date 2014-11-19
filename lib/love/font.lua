@@ -1,7 +1,9 @@
--- module
-local m = love.font
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.font is not a table object!")
+
+local m = love.font or {}
+love.font = assert(m)
 
 --[[
 m.newFontData = TODO

@@ -1,8 +1,10 @@
 
--- module
-local m = love.event
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.event is not a table object!")
+
+-- module
+local m = love.event or {}
+love.event = assert(m)
 
 local Queue = require("queue")
 
@@ -10,10 +12,6 @@ local Queue = require("queue")
 local internaldata = {}
 internaldata.event = Queue.new()
 
-
-if love and not love.event then
-	love.event = {}
-end
 
 m.poll = function()
 	return function()

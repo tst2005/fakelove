@@ -1,7 +1,9 @@
--- module
-local m = love.timer
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.timer is not a table object!")
+
+local m = love.timer or {}
+love.timer = assert(m)
 
 -- TODO: move socket hack to external file like sleep.lua ?
 if not socket then

@@ -1,7 +1,8 @@
--- module
-local m = love.keyboard
-assert(love, "love module required")
-assert(type(m)=="table", "module love.keyboard is not a table object!")
 
+local love = require("love")
+assert(love, "love module required")
+
+local m = love.keyboard or {}
+love.keyboard = assert(m)
 
 return m

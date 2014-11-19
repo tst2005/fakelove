@@ -1,6 +1,8 @@
--- module
-local m = love.physics
+
+local love = require("love")
 assert(love, "love module required")
-assert(type(m)=="table", "module love.physics is not a table object!")
+
+local m = love.physics or {}
+love.physics = assert(m)
 
 return m
