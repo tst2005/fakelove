@@ -27,6 +27,8 @@
   Have fun!
 ]]--
 
+local _PATCH_MODULE_PATH_=true
+
 --[[ VERSION=0.3.20110903 ]]--
 
 local print = print
@@ -35,14 +37,6 @@ local assert = assert
 --local require = require
 
 function nothing(...) end
-function TODO2(...)
-	local a1 = ...
-	a1 = a1 or "???"
-	return function(...)
-		print("TODO:", a1)
-	end
-end
-function TODO(...) print("TODO...") end
 
 local function foreachtostring(...)
 	local list = {...}
@@ -75,69 +69,99 @@ local function pathjoin(dir1, dir2)
         return dir1.."/"..dir2
 end
 
+assert(arg)
 local BASEDIR = dirname(arg[0])
 --if BASEDIR ~= "" then
+if  _PATCH_MODULE_PATH_ then
 do
 	local p1 = pathjoin(BASEDIR, "lib/?.lua")
 	local p2 = pathjoin(BASEDIR, "lib/?/init.lua")
-	package.path = p1..";"..p2..";"..package.path
+	package.path = table.concat({p1, p2, package.path}, ";")
+end
 end
 --end
 
-local alt = require("alternatives")
-alt.debugcallback = print
+local todo = require("todo")
+TODO2 = todo.TODO2
+TODO  = todo.TODO
 
-alt.alias("love.screen", "love-screen")
+local CE = require("compat_env")
 
-alt.setrequire = require -- the original one
+--x-local alt = require("alternatives")
+--x-alt.debugcallback = print
+
+--alt.alias("love.screen", "love-screen")
+
+--x-alt.setrequire = require -- the original one
 
 local fakelove = {}
--- set what requirei() function we must use
-fakelove.require = alt.require
+-- set what require() function we must use
+--x-fakelove.require = alt.require
+fakelove.require = require
 
 fakelove.internaldata = {}
 function getInternalDataTable()
         return fakelove.internaldata
 end
 
-local lovemoduleload = function(modname, love)
-	assert(love, "love table not exists??")
-
-	if not love[modname] then
-		love[modname] = {}
-		local origrequire = fakelove.require
-		local m = origrequire("love."..modname)
-		--printf("debug m = %s ; love[%s] = %s", m, modname, love[modname])
-
-		--FIXME: module() must not be use like that !!
-		--module("love."..modname)
+local function require_conflua_mainlua(modname)
+	local ok, result = pcall(dofile, modname)
+	if not ok then
+		error("raise a error "..modname.."not found")
 	end
-	return love[modname]
+	return ok
 end
-
--- patch the require function
-require = function(modname)
-	--print("require called for", modname)
-	if modname == "conf.lua" or modname == "main.lua" then
-		local ok, result = pcall(dofile, modname)
-		if not ok then
-			error("raise a error conf.lua or main.lua not found")
-		end
-		return ok
+local function trydofile_fakefs(modname)
+	local fakefs = require("package").fakefs or {}
+	if fakefs[modname] then
+		print("fakefs is used for "..modname)
+		return loadstring(fakefs[modname])()
 	end
-
-	if modname:find("^love\.") then
-		local submodname = modname:gsub("^love\.(.*)$", "%1")
-		return lovemoduleload(submodname, love)
+end
+local function trydofile(modname)
+	local ok, result = pcall(trydofile_fakefs, modname)
+	if ok then
+		return result
 	end
-
 	local ok, result = pcall(dofile, modname..".lua")
 	if ok then
 		return result
 	end
-	local origrequire = fakelove.require
-	return origrequire(modname)
 end
 
-require("embeded/boot")
+
+-- patch the require function
+require = function(modname)
+	if modname == "conf.lua" or modname == "main.lua" then
+		print("require called for", modname, "<--- special")
+		return require_conflua_mainlua(modname)
+	end
+	if modname == "embeded/boot" then
+		print("require called for", modname, "<--- special")
+		return trydofile(modname)
+	end
+	print("require called for", modname)
+
+	if modname:find("^love%..*") then
+		return fakelove.require(modname)
+	end
+
+	local ok, result = pcall(fakelove.require, modname)
+	if ok then
+		print("require success with normal module", modname)
+		return result
+	end
+	local ok2, result2 = pcall(dofile, modname..".lua")
+	if ok2 then
+		print("require success with +.lua module", modname)
+		return result
+	end
+	return fakelove.require(modname)
+end
+
+_G.no_game_code = false -- workaround for strictness.lua
+
+--require("embeded/boot") -- quiet ugly
+print("trydofile called for embeded/boot <--- special")
+trydofile("embeded/boot")
 
