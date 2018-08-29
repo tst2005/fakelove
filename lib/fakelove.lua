@@ -107,7 +107,7 @@ end
 local function require_conflua_mainlua(modname)
 	local ok, result = pcall(dofile, modname)
 	if not ok then
-		error("raise a error "..modname.."not found")
+		error("raise a error "..modname.." not found")
 	end
 	return ok
 end
