@@ -380,9 +380,10 @@ local function enumerate(dir)
 	local files = {}
 	for file in lfs.dir(dir) do
 		if file ~= "." and file ~= ".." then
-			files:insert(file)
+			table.insert(files, file)
 		end
 	end
+	return files
 end
 
 local function mkdir(name)
